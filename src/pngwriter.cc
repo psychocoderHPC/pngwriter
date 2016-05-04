@@ -40,6 +40,7 @@
  * */
 
 #include "pngwriter.h"
+#include <omp.h>
 
 // Default Constructor
 ////////////////////////////////////////////////////////////////////////////
@@ -3286,10 +3287,16 @@ void pngwriter::scale_k(double k)
 
    double readx, ready;
 
-   for(int x = 1; x<= scaledw; x++)
+   #pragma omp parallel for schedule(guided)
+   for(int y = 1; y <= scaledh; y++)
+
      {
-	for(int y = 1; y <= scaledh; y++)
+   for(int x = 1; x<= scaledw; x++)
+
+    //for(int i = 1; i<= scaledw*scaledh; i++)
 	  {
+         //int y = i%scaledh;
+         //int x = i/scaledh;
 	     readx = (2*x-1)*spacingx;
 	     ready = (2*y-1)*spacingy;
 	     red = this->bilinear_interpolation_read(readx, ready, 1);
@@ -3298,7 +3305,7 @@ void pngwriter::scale_k(double k)
 	     temp.plot(x, y, red, green, blue);
 
 	  }
-     }
+    }
 
    // From here on, the process is the same for all scale functions.
    //Get data out of temp and into this's storage.
